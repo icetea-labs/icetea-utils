@@ -1,0 +1,24 @@
+{
+  "name": "icetea-botutils",
+  "version": "0.1.0",
+  "description": "Utilities for Icetea blockchain's decentralized bots.",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TradaTech/botutils.git"
+  },
+  "keywords": [
+    "icetea",
+    "blockchain",
+    "chatbot"
+  ],
+  "author": "Trada Tech",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TradaTech/botutils/issues"
+  },
+  "homepage": "https://github.com/TradaTech/botutils#readme"
+}
