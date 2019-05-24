@@ -3,6 +3,7 @@ class Message {
     this.messages = []
     text && this[t] && this[t](text, options)
   }
+
   done () {
     return {
       options: this.opts,
@@ -33,7 +34,7 @@ class Message {
     if (this.opts && this.opts.value && state !== 'write') {
       throw new Error(`Cannot set nextStateAccess to '${state}' while also calling requestTransfer.`)
     }
-    return this.options({ state })
+    return this.options({ nextStateAccess: state })
   }
 
   push (message) {
