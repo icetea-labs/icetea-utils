@@ -2,7 +2,9 @@ const { cloneDeep } = require('lodash')
 const { Message } = require('./message')
 
 class SurveyBot {
-  chats = {}
+  constructor () {
+    this.chats = {}
+  }
 
   botInfo () {
     const info = {
