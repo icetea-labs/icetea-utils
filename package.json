@@ -1,7 +1,7 @@
 {
-  "name": "icetea-botutils",
+  "name": "@iceteachain/utils",
   "version": "0.1.0",
-  "description": "Utilities for Icetea blockchain's decentralized bots.",
+  "description": "Utilities for Icetea blockchain.",
   "main": "index.js",
   "scripts": {
     "test": "standard --fix"
@@ -11,25 +11,26 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TradaTech/botutils.git"
+    "url": "git+https://github.com/TradaTech/icetea-utils.git"
   },
   "keywords": [
     "icetea",
     "blockchain",
+    "utils",
     "chatbot"
   ],
-  "author": "Trada Tech",
+  "author": "Trada Tech <iceteachain@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/TradaTech/botutils/issues"
+    "url": "https://github.com/TradaTech/icetea-utils/issues"
   },
-  "homepage": "https://github.com/TradaTech/botutils#readme",
+  "homepage": "https://github.com/TradaTech/icetea-utils#readme",
   "devDependencies": {
     "babel-eslint": "^10.0.1",
     "standard": "^12.0.1"
   },
   "dependencies": {
-    "@hapi/joi": "15.0.3",
-    "big.js": "5.2.2"
+    "@hapi/joi": "^15.0.3",
+    "big.js": "^5.2.2"
   }
 }
