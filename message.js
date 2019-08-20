@@ -4,7 +4,14 @@ class Message {
     text && this[t] && this[t](text, options)
   }
 
-  done () {
+  done (nextStateOrOpts) {
+    if (nextStateOrOpts) {
+      if (typeof nextStateOrOpts === 'string') {
+        this.nextStateAccess(nextStateOrOpts)
+      } else {
+        this.option(nextStateOrOpts)
+      }
+    }
     return {
       options: this.opts,
       messages: this.messages
@@ -13,7 +20,15 @@ class Message {
 
   option (opts) {
     if (opts) {
-      this.opts = Object.assign(this.opts || {}, opts)
+      this.opts = this.opts || {}
+      let next
+      if (opts.next) {
+        next = Object.assign({}, this.opts.next, opts.next)
+      }
+      Object.assign(this.opts, opts)
+      if (next) {
+        this.opts.next = next
+      }
     }
     return this
   }
@@ -87,12 +102,45 @@ class Message {
     const self = this
     const m = []
     const t = {
-      button (text, value, options = {}) {
-        if (!value) value = text
+      button (text, valueOrOptions, nextOrNextState) {
+        let options, next
+        if (valueOrOptions) {
+          if (typeof valueOrOptions === 'string') {
+            options = {
+              value: valueOrOptions
+            }
+          } else {
+            options = {
+              value: text,
+              ...valueOrOptions
+            }
+          }
+        } else {
+          options = {
+            value: text
+          }
+        }
+
+        if (nextOrNextState) {
+          if (typeof nextOrNextState === 'string') {
+            next = {
+              stateAccess: nextOrNextState
+            }
+          } else {
+            next = nextOrNextState
+          }
+        }
+
+        if (next) {
+          self.option({
+            next: {
+              [options.value]: next
+            }
+          })
+        }
         m.push({
           text,
-          value,
-          ...options
+          ...(options || {})
         })
         return t
       },
