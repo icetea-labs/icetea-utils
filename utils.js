@@ -1,5 +1,4 @@
 const Big = require('big.js')
-const Joi = require('@hapi/joi')
 
 const TEA_DECIMAL = 6
 const TEA_TO_MICRO = 10 ** TEA_DECIMAL
@@ -23,7 +22,7 @@ exports.expect = function (condition, message) {
 }
 
 exports.validate = function (value, schema, options) {
-  const { value: validatedValue, error } = Joi.validate(value, schema, options)
+  const { value: validatedValue, error } = schema.validate(value, options)
   if (error) {
     throw error
   }

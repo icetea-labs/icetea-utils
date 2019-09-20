@@ -142,7 +142,10 @@ class SurveyBot {
       collector._step++
     }
 
-    const result = this.succeed(value, collector, stepName)
+    let result = this.succeed(value, collector, stepName)
+    if (typeof result.__getPackingContent === 'function') {
+      result = result.__getPackingContent()
+    }
 
     if (nextStepStateAccess && !(result.options || {}).nextStateAccess) {
       result.options = result.options || {}

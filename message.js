@@ -4,30 +4,23 @@ class Message {
     text && this[t] && this[t](text, options)
   }
 
-  done (nextStateOrOpts) {
-    if (nextStateOrOpts) {
-      if (typeof nextStateOrOpts === 'string') {
-        this.nextStateAccess(nextStateOrOpts)
-      } else {
-        this.option(nextStateOrOpts)
-      }
-    }
+  __getPackingContent () {
     return {
-      options: this.opts,
+      options: this.options,
       messages: this.messages
     }
   }
 
   option (opts) {
     if (opts) {
-      this.opts = this.opts || {}
+      this.options = this.options || {}
       let next
       if (opts.next) {
-        next = Object.assign({}, this.opts.next, opts.next)
+        next = Object.assign({}, this.options.next, opts.next)
       }
-      Object.assign(this.opts, opts)
+      Object.assign(this.options, opts)
       if (next) {
-        this.opts.next = next
+        this.options.next = next
       }
     }
     return this
@@ -49,7 +42,7 @@ class Message {
     if (!['none', 'read', 'write'].includes(state)) {
       throw new Error(`nextStateAccess must either 'none', 'read', or 'write' but got '${state}'.`)
     }
-    if (this.opts && this.opts.value && state !== 'write') {
+    if (this.options && this.options.value && state !== 'write') {
       throw new Error(`Cannot set nextStateAccess to '${state}' while also calling requestTransfer.`)
     }
     return this.option({ nextStateAccess: state })
@@ -241,7 +234,7 @@ Message.html = function (html, options) {
   return new Message(html, 'html', options)
 }
 
-Message.sendLoading = function(eventName, options) {
+Message.sendLoading = function (eventName, options) {
   return new Message().loading(options).updateOnEvent(eventName).done()
 }
 
