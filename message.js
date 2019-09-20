@@ -235,7 +235,7 @@ Message.html = function (html, options) {
 }
 
 Message.sendLoading = function (eventName, options) {
-  return new Message().loading(options).updateOnEvent(eventName).done()
+  return new Message().loading(options).updateOnEvent(eventName)
 }
 
 Message.create = function () {
