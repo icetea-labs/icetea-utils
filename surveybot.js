@@ -64,10 +64,10 @@ class SurveyBot {
   }
 
   handleOptions (options) {
-    if (options) {
-      options = cloneDeep(options)
+    if (options && options.sendback) {
+      const sendback = cloneDeep(options.sendback)
       if (options.sendback) {
-        Object.assign(this, options.sendback)
+        Object.assign(this, sendback)
       }
     }
   }
@@ -82,7 +82,7 @@ class SurveyBot {
     if (this[methodName]) {
       return this[methodName]()
     } else {
-      return Message.html(`Command <b>${command}</b> is not supported by this bot.`).done()
+      return Message.html(`Command <b>${command}</b> is not supported by this bot.`)
     }
   }
 
@@ -112,40 +112,37 @@ class SurveyBot {
     return this.ontext()
   }
 
-  proceed (data, collector) {
-    if (!collector) {
-      throw new Error('Collector is required.')
+  proceed (text, chatData) {
+    if (!chatData) {
+      throw new Error('chatData is required.')
     }
     const steps = this.getSteps()
     if (!steps || !steps.length) {
       throw new Error('Steps is required.')
     }
 
-    if (collector._step < 0 || collector._step >= steps.length) {
+    if (chatData._step < 0 || chatData._step >= steps.length) {
       throw new Error('Invalid step.')
     }
 
-    const stepObj = steps[collector._step]
+    const stepObj = steps[chatData._step]
     const stepName = typeof stepObj === 'string' ? stepObj : stepObj.name
     const nextStepStateAccess = typeof stepObj === 'string' ? undefined : stepObj.nextStateAccess
 
     let value
     try {
-      value = this.collect(data, collector, stepName)
+      value = this.validate(text, chatData, stepName)
     } catch (error) {
-      return this.fail(data, collector, error, stepName)
+      return this.retry(text, chatData, error, stepName)
     }
 
-    if (collector._step >= steps.length - 1) {
-      collector._step = 0
+    if (chatData._step >= steps.length - 1) {
+      chatData._step = 0
     } else {
-      collector._step++
+      chatData._step++
     }
 
-    let result = this.succeed(value, collector, stepName)
-    if (typeof result.__getPackingContent === 'function') {
-      result = result.__getPackingContent()
-    }
+    let result = this.succeed(text, chatData, value, stepName)
 
     if (nextStepStateAccess && !(result.options || {}).nextStateAccess) {
       result.options = result.options || {}
@@ -154,24 +151,28 @@ class SurveyBot {
     return result
   }
 
-  collect (data, collector, stepName) {
-    const methodName = 'collect_' + stepName
+  validate (text, chatData, stepName) {
+    const methodName = 'validate_' + stepName
     if (this[methodName]) {
-      return this[methodName](data, collector)
+      return this[methodName]({ text, chatData })
     }
   }
 
-  succeed (value, collector, stepName) {
-    const methodName = 'succeed_' + stepName
+  succeed (text, chatData, value, stepName) {
+    let methodName = 'after_' + stepName
+    if (!this[methodName] && chatData._step === 1) {
+      methodName = stepName
+    }
+
     if (this[methodName]) {
-      return this[methodName](value, collector)
+      return this[methodName]({ text, chatData, value })
     }
   }
 
-  fail (data, collector, error, stepName) {
-    const methodName = 'fail_' + stepName
+  retry (text, chatData, error, stepName) {
+    const methodName = 'retry_' + stepName
     if (this[methodName]) {
-      return this[methodName](data, collector, error)
+      return this[methodName]({ text, chatData, error })
     }
   }
 

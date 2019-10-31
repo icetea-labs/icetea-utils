@@ -5,10 +5,12 @@ class Message {
   }
 
   __getPackingContent () {
-    return {
-      options: this.options,
-      messages: this.messages
-    }
+    return Object.entries(this).reduce((r, [key, value]) => {
+      if (typeof value !== 'function') {
+        r[key] = value
+      }
+      return r
+    }, {})
   }
 
   option (opts) {
