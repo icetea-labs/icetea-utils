@@ -155,6 +155,8 @@ class SurveyBot {
     const methodName = 'validate_' + stepName
     if (this[methodName]) {
       return this[methodName]({ text, chatData })
+    } else if (text != null && !['', '_'].includes(text)) {
+      chatData[stepName] = text
     }
   }
 

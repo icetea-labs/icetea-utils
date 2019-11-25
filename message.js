@@ -64,6 +64,20 @@ class Message {
     return this.option({ updateOnTag: tagName })
   }
 
+  // key could be a base58 string (then, encryption will use default options)
+  // or it could be a object of key, algo, and encryption params
+  requestEncryption (key, items) {
+    if (!key) {
+      throw new Error('Invalid key')
+    }
+
+    if (items != null && !Array.isArray(items)) {
+      throw new Error('Encryption items must be an array of string.')
+    }
+
+    return this.option({ encrypt: { key, items } })
+  }
+
   push (message) {
     this.messages.push(message)
     return this
@@ -97,31 +111,38 @@ class Message {
     const self = this
     const m = []
     const t = {
+
+      // nextOrNextState is next state for this button
+      // this let us set different state for each button of the row
       button (text, valueOrOptions, nextOrNextState) {
         let options, next
         if (valueOrOptions) {
           if (typeof valueOrOptions === 'string') {
+            // is value
             options = {
               value: valueOrOptions
             }
           } else {
+            // is option, just merge
             options = {
-              value: text,
+              value: text, // default
               ...valueOrOptions
             }
           }
         } else {
           options = {
-            value: text
+            value: text // no valueOrOptions => default to text
           }
         }
 
         if (nextOrNextState) {
           if (typeof nextOrNextState === 'string') {
+            // is state string ('read', 'write', 'none')
             next = {
               stateAccess: nextOrNextState
             }
           } else {
+            // is next state object, example { stateAccess: 'write' }
             next = nextOrNextState
           }
         }
