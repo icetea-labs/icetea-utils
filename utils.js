@@ -30,6 +30,46 @@ exports.validate = function (value, schema, options) {
   return validatedValue
 }
 
+// A simple msg handler, similar to ExpressJS without middleware support
+exports.createMsgHandlers = (context) => {
+    const handlers = {
+        payable: {},
+        transaction: {},
+        view: {},
+        pure: {},
+        any: {}
+    }
+    return {
+        ondeploy(fn) {
+            handlers['__on_deployed'] = fn
+        },
+        onreceive(fn) {
+            handlers['__on_received'] = fn
+        },
+        pay(name, fn) {
+            handlers.payable[name] = fn
+        },
+        tx(name, fn) {
+            handlers.transaction[name] = fn
+        },
+        view(name, fn) {
+            handlers.view[name] = fn
+        },
+        pure(name, fn) {
+            handlers.pure[name] = fn
+        },
+        any(name, fn) {
+            handlers.any[name] = fn
+        },
+        handle() {
+            const h = handlers[context.runtime.msg.callType][context.runtime.msg.name]
+            if (!h) return
+
+            return h.call(context.runtime.msg, context, ...(context.runtime.msg.params || []))
+        }
+    }
+}
+
 exports.stateUtil = function (context) {
   const ensureArray = p => {
       if (p == null) {
@@ -106,8 +146,14 @@ exports.stateUtil = function (context) {
           }
       }
   
-      r.add = item => {
-          const id = seqNext(name)
+      r.add = (item, { idFieldName, id } = {}) => {
+          const idInItem = idFieldName && item[idFieldName]
+          id = id || idInItem || seqNext(name)
+
+          if (idInItem) {
+              item = { ...item }
+              delete item[idFieldName]
+          }
           context.setState([...nodePath, id], item)
           return id
       }
@@ -125,4 +171,53 @@ exports.stateUtil = function (context) {
   }
 
   return { seq, path }
+}
+
+exports.wrapExternalContract = (contractAddress, contractLoader, methodTranslator = '_') => {
+
+    let addr = contractAddress, contract
+
+    const loadContract = (addr, loader) => {
+        if (!contract) {
+            contract = (typeof loader === 'function' ? loader : loader.runtime.loadContract)(addr)
+        }
+        return contract
+    }
+
+    const translateProp = (prop, translator) => {
+        if (typeof translator === 'string') {
+            return translator + prop
+        }
+
+        if (typeof translator === 'function') {
+            return translator(prop)
+        }
+
+        return prop
+    }
+
+    const params = { 
+        get contractAddress() {
+            return addr
+        },
+        set contractAddress(newAddr) {
+            addr = newAddr
+            // reset contract
+            contract = undefined
+            return addr
+        },
+        contractLoader,
+        methodTranslator,
+    }
+
+
+    return new Proxy(params, {
+        get(target, prop, ...args) {
+            const [newTarget, newProp] = prop in params ? [params, prop] : [
+                loadContract(params.contractAddress, params.contractLoader),
+                translateProp(prop, params.methodTranslator)
+            ]
+            return Reflect.get(newTarget, newProp, ...args)
+        }
+    })
 }
