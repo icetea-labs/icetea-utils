@@ -142,7 +142,7 @@ class SurveyBot {
       chatData._step++
     }
 
-    let result = this.succeed(text, chatData, value, stepName)
+    const result = this.succeed(text, chatData, value, stepName)
 
     if (nextStepStateAccess && !(result.options || {}).nextStateAccess) {
       result.options = result.options || {}
