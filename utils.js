@@ -211,8 +211,8 @@ exports.stateUtil = function (context) {
   }
 
   const define = (name, defaultValue) => path(name, { defaultValue })
-  const defineList = (name, keyType) => path(name, { defaultValue: [], list: true, autoKey: false, keyType })
-  const defineAutoList = name => path(name, { defaultValue: [], list: true, autoKey: true })
+  const defineList = (name, options = {}) => path(name, { ...options, defaultValue: [], list: true, autoKey: false })
+  const defineAutoList = (name, options = {}) => path(name, { ...options, defaultValue: [], list: true, autoKey: true })
 
   const seq = (name, opts) => {
     return {
