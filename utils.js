@@ -169,7 +169,7 @@ exports.stateUtil = function (context) {
         return r.addAt(undefined, item, options)
       }
 
-      r.addAt = (subPath, item, { id, idFieldName = 'id' } = {}) => {
+      r.addAt = (subPath, item, { id, idFieldName } = {}) => {
         const child = combineChild(nodePath, subPath)
         const keyFieldName = idFieldName || keyName
         id = id != null ? id : item[keyFieldName]
