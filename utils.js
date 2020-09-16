@@ -110,6 +110,7 @@ exports.stateUtil = function (context) {
   const path = (name, {
     defaultValue,
     list = false,
+    keyName = 'id',
     keyType,
     autoKey = false
   } = {}) => {
@@ -146,11 +147,22 @@ exports.stateUtil = function (context) {
       }
     } else {
       r.count = bindSelf('countState', nodePath)
-      r.query = (actionGroups, options) => {
-        if ((autoKey || keyType) && (options == null || !('keyType' in options))) {
-          // options is frozen and cannot be extended directly
-          options = Object.assign({}, options || {}, { keyType: keyType || 'number' })
+      r.query = (actionGroups, options = {}) => {
+        let extraOptions
+        if ((autoKey || keyType) && !('keyType' in options)) {
+          extraOptions = { keyType: keyType || 'number' }
         }
+
+        if (keyName && !('keyName' in options)) {
+          extraOptions = extraOptions || {}
+          extraOptions.keyName = keyName
+        }
+
+        if (extraOptions) {
+          // options is frozen and cannot be extended directly
+          options = Object.assign({}, options, extraOptions)
+        }
+
         return context.queryState(nodePath, actionGroups, options)
       }
       r.add = (item, options) => {
@@ -159,12 +171,13 @@ exports.stateUtil = function (context) {
 
       r.addAt = (subPath, item, { id, idFieldName = 'id' } = {}) => {
         const child = combineChild(nodePath, subPath)
-        id = id != null ? id : item[idFieldName]
+        const keyFieldName = idFieldName || keyName
+        id = id != null ? id : item[keyFieldName]
         if (id == null) {
           if (autoKey) {
             id = seqNext(child)
           } else {
-            throw new Error('Adding item error: must specify id or idFieldName for non-auto list.')
+            throw new Error('Adding item error: must specify id or idFieldName, or keyName for non-auto list.')
           }
         }
 
@@ -173,9 +186,9 @@ exports.stateUtil = function (context) {
           throw new Error(`Adding item error: an item with ID ${id} already exists.`)
         }
 
-        if (idFieldName in item) {
+        if (keyFieldName in item) {
           item = { ...item }
-          delete item[idFieldName]
+          delete item[keyFieldName]
         }
 
         context.setState(newPath, item)
